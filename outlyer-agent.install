@@ -1,0 +1,48 @@
+pre_install() {
+
+    # create a system user for the process
+    if [[ ! $(id outlyer 2>/dev/null) ]] ;then
+    # create a dataloop system account
+    /usr/bin/useradd --system --home-dir /opt/outlyer -s /usr/bin/bash --groups adm outlyer
+    fi
+
+    if [[ ! $(groups outlyer | grep &>/dev/null 'badmb') ]] ; then
+      /usr/bin/usermod -a -G adm outlyer
+    fi
+}
+
+post_install() {
+
+    # Sort out file permissions
+    if [[ $(id outlyer 2>/dev/null) ]] ;then
+    chown -R outlyer:outlyer /etc/outlyer
+    chown outlyer:outlyer /opt/outlyer/
+    fi
+
+}
+
+pre_upgrade() {
+    pre_install
+}
+
+post_upgrade() {
+    post_install
+}
+
+pre_remove() {
+
+    # stop the service
+    systemctl stop outlyer-agent 2>/dev/null
+
+}
+
+post_remove() {
+    #
+    # Perform necessary dataloop-agent removal steps
+    # after package is uninstalled.
+    #
+
+    echo "outlyer-agent has been uninstalled!"
+
+    exit 0
+}
